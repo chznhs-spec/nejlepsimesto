@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hip, hip, PRAHA!</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts: Montserrat & Playfair Display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,700;0,900;1,900&family=Playfair+Display:ital,wght@0,700;1,900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #0b0d19;
+            color: #ffffff;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* Ambient Animated Gradient Background */
+        .gradient-bg {
+            background: linear-gradient(135deg, #0d1b2a, #1b263b, #415a77, #770054, #1b003a);
+            background-size: 400% 400%;
+            animation: gradientAnimation 18s ease infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Typography Special Styling */
+        .text-headline {
+            font-family: 'Playfair Display', serif;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .text-praha {
+            background: linear-gradient(180deg, #FFF 0%, #FFD700 45%, #FF8C00 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.6));
+        }
+
+        /* Glowing Pulse Effect */
+        .glow-sphere {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            pointer-events: none;
+            animation: floatGlow 10s infinite ease-in-out alternate;
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(60px, -40px) scale(1.2); }
+            100% { transform: translate(-40px, 50px) scale(0.9); }
+        }
+
+        /* Entrance Animation Keyframes */
+        @keyframes revealUp {
+            0% {
+                opacity: 0;
+                transform: translateY(60px) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3) rotate(-5deg);
+            }
+            70% {
+                transform: scale(1.08) rotate(2deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .animate-reveal-1 {
+            animation: revealUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-reveal-2 {
+            animation: popIn 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+            opacity: 0;
+        }
+
+        /* Canvas Overlay */
+        #particleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Ripple Effect Container */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: rippleEffect 0.8s linear;
+            background-color: rgba(255, 255, 255, 0.35);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        @keyframes rippleEffect {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Interactive Button */
+        .celebrate-btn {
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .celebrate-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.8), inset 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .celebrate-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="w-screen h-screen gradient-bg flex flex-col justify-between items-center relative overflow-hidden">
+
+    <!-- Interactive Canvas for Floating Particles and Stars -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Glowing Background Lights -->
+    <div class="glow-sphere w-96 h-96 bg-amber-400 top-1/4 left-1/4"></div>
+    <div class="glow-sphere w-80 h-80 bg-purple-600 bottom-1/4 right-1/4" style="animation-delay: -5s;"></div>
+    <div class="glow-sphere w-72 h-72 bg-red-500 top-1/3 right-1/3" style="animation-delay: -2s;"></div>
+
+    <!-- Header Navigation Bar / Subtitle Badge -->
+    <header class="z-10 pt-8 sm:pt-12 text-center">
+        <span class="inline-block px-5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs sm:text-sm font-semibold tracking-widest text-amber-300 uppercase shadow-lg">
+            ✨ Sláva & Oslava <strong style="font-size: xx-large;">Srdce Evropy</strong> ✨
+        </span>
+    </header>
+
+    <!-- Main Content Centerpiece -->
+    <main class="z-10 text-center px-4 my-auto flex flex-col items-center justify-center">
+        <!-- Subtitle / Intro -->
+        <h2 class="animate-reveal-1 text-2xl sm:text-4xl md:text-5xl font-light tracking-wide text-amber-200/90 mb-2 sm:mb-4">
+            Hip, hip,
+        </h2>
+
+        <!-- Main Title PRAHA! -->
+        <h1 class="animate-reveal-2 text-headline text-6xl sm:text-8xl md:text-9xl lg:text-[11rem] font-black tracking-tight leading-none text-praha mb-8">
+            PRAHA!
+        </h1>
+
+        <!-- Subtext description -->
+        <p class="max-w-xl text-base sm:text-lg text-slate-300 font-light mb-10 px-6 backdrop-blur-sm py-2 rounded-xl bg-black/20 border border-white/5 shadow-xl">
+            Klikněte kamkoliv na obrazovku nebo stiskněte tlačítko pro spuštění slavnostního ohňostroje!
+        </p>
+
+        <!-- Interactive Celebration Button -->
+        <button id="fireworkBtn" class="celebrate-btn z-20 px-8 py-4 bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 text-slate-950 font-black text-lg sm:text-xl rounded-full tracking-wider uppercase flex items-center gap-3 cursor-pointer">
+            <span>🎉</span>
+            <span>Zatleskat & Oslavit!</span>
+            <span>🎉</span>
+        </button>
+    </main>
+
+    <!-- Footer Decorative Element -->
+    <footer class="z-10 pb-6 text-center text-xs text-slate-400/70 tracking-wider">
+        <p>© Praha — Stověžaté město plné kouzel</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. Background Interactive Floating Particle System ---
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let particlesArray = [];
+        let mouse = {
+            x: null,
+            y: null,
+            radius: 150
+        };
+
+        // Resize Canvas dynamically
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Mouse move listener for particle interaction
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+
+        // Particle Class
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = (Math.random() - 0.5) * 0.8;
+                this.speedY = (Math.random() - 0.5) * 0.8;
+                this.color = `hsl(${Math.random() * 60 + 35}, 100%, 75%)`; // Warm golden shades
+                this.alpha = Math.random() * 0.7 + 0.3;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Bounce off edges
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+
+                // Interaction with mouse cursor
+                if (mouse.x && mouse.y) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < mouse.radius) {
+                        const angle = Math.atan2(dy, dx);
+                        const force = (mouse.radius - distance) / mouse.radius;
+                        this.x -= Math.cos(angle) * force * 3;
+                        this.y -= Math.sin(angle) * force * 3;
+                    }
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.restore();
+            }
+        }
+
+        // Initialize particle array
+        function initParticles() {
+            particlesArray = [];
+            const numberOfParticles = Math.floor((canvas.width * canvas.height) / 9000);
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+        initParticles();
+
+        // Animation loop for particles
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+            }
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+
+        // --- 2. Interactive Click Ripples & Confetti ---
+        
+        // Launch Confetti Cannon Function
+        function triggerConfetti(x, y) {
+            // Convert page coordinates to ratio for canvas-confetti library
+            const originX = x ? x / window.innerWidth : 0.5;
+            const originY = y ? y / window.innerHeight : 0.6;
+
+            // Multi-burst confetti preset
+            confetti({
+                particleCount: 80,
+                spread: 90,
+                origin: { x: originX, y: originY },
+                colors: ['#FFD700', '#FF4500', '#FF69B4', '#00FFFF', '#FFFFFF'],
+                disableForReducedMotion: true
+            });
+        }
+
+        // Visual Water Ripple Effect on Click
+        function createRipple(event) {
+            const ripple = document.createElement('div');
+            ripple.classList.add('ripple');
+            
+            const size = Math.max(window.innerWidth, window.innerHeight) * 0.15;
+            ripple.style.width = `${size}px`;
+            ripple.style.height = `${size}px`;
+            ripple.style.left = `${event.clientX - size / 2}px`;
+            ripple.style.top = `${event.clientY - size / 2}px`;
+
+            document.body.appendChild(ripple);
+
+            // Remove ripple after animation completes
+            setTimeout(() => {
+                ripple.remove();
+            }, 800);
+        }
+
+        // Click Event on Whole Screen
+        document.body.addEventListener('click', (e) => {
+            // Ignore click if clicking specifically on the button to avoid double trigger
+            if (e.target.closest('#fireworkBtn')) return;
+            
+            createRipple(e);
+            triggerConfetti(e.clientX, e.clientY);
+        });
+
+        // Dedicated Button Action (Grand Celebration Burst)
+        const btn = document.getElementById('fireworkBtn');
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation(); // prevent body click handler
+            
+            // Grand Confetti Blast from sides and center
+            confetti({
+                particleCount: 120,
+                angle: 60,
+                spread: 70,
+                origin: { x: 0, y: 0.7 }
+            });
+            confetti({
+                particleCount: 120,
+                angle: 120,
+                spread: 70,
+                origin: { x: 1, y: 0.7 }
+            });
+            confetti({
+                particleCount: 150,
+                spread: 100,
+                origin: { x: 0.5, y: 0.5 },
+                colors: ['#FFD700', '#FFA500', '#FFFFFF']
+            });
+        });
+
+        // --- 3. Auto Welcome Confetti Burst on Load ---
+        window.onload = function() {
+            setTimeout(() => {
+                triggerConfetti(window.innerWidth / 2, window.innerHeight * 0.4);
+            }, 500);
+        };
+    </script>
+</body>
+</html>
